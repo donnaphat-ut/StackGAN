@@ -3,6 +3,9 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+#dataset
+coco2014/
+
 # C extensions
 *.so
 
@@ -76,6 +79,7 @@ target/
 
 # Jupyter Notebook
 .ipynb_checkpoints
+*.ipynb
 
 # IPython
 profile_default/

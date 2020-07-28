@@ -1,4 +1,3 @@
-# %load dataset.py
 import torch
 from torchvision import transforms
 import os
@@ -19,11 +18,12 @@ class BirdDataset(data.Dataset):
         self.imgSize = imgSize
         self.dataDir = dataDir
         self.filenames, self.caps = self.load_info(dataDir, split)
+        self.bbox = self.load_bbox()
         self.classes = self.load_class(dataDir, split)
               
     def load_info(self, dataDir, split):
         filenames = self.load_filenames(dataDir, split)
-        captionFile = os.path.join(dataDir, split, 'char-CNN-RNN-embeddings.pickle')
+        captionFile = os.path.join(dataDir, 'birds', split, 'char-CNN-RNN-embeddings.pickle')
         with open (captionFile, 'rb') as f:
             captions = pickle.load(f)
             captions = np.array(captions)
@@ -32,14 +32,28 @@ class BirdDataset(data.Dataset):
         return filenames, captions
         
     def load_filenames(self, dataDir, split):
-        path = os.path.join(dataDir, split, 'filenames.pickle')
+        path = os.path.join(dataDir, 'birds', split, 'filenames.pickle')
         with open(path, 'rb') as f:
             filenames = pickle.load(f)
         print('Load filenames from: %s (%d)' % (path, len(filenames)))
         return filenames
     
+    def load_bbox(self):
+        path = os.path.join(self.dataDir, 'CUB_200_2011', 'bounding_boxes.txt')
+        bbox_data = pd.read_csv(path, delim_whitespace=True, header=None).astype(int)
+
+        filepath = os.path.join(self.dataDir, 'CUB_200_2011','images.txt')
+        df_filenames = pd.read_csv(filepath, delim_whitespace=True, header=None)
+        filenames = sorted( list(df_filenames[1]))
+        fname_bbox_dict = {x[:-4]:[] for x in filenames} # use filename without '.jpg' extension as a key
+        for i in range(len(filenames)):
+            data = list(bbox_data.iloc[1][1:])
+            k = filenames[i][:-4]
+            fname_bbox_dict[k] = data
+        return fname_bbox_dict
+    
     def load_class(self, dataDir, split):
-        path = os.path.join(dataDir, split, 'class_info.pickle')
+        path = os.path.join(dataDir, 'birds', split, 'class_info.pickle')
         if os.path.isfile(path):
             with open(path, 'rb') as f:
                 classId = pickle.load(f)
@@ -67,20 +81,20 @@ class BirdDataset(data.Dataset):
 
     
     def __getitem__(self, idx):
+        key = self.filenames[idx]
         
-        classId = self.classes[idx]
-        
-        if self.boundingBox is not None:
-            bbox = self.boundingBox[self.filenames[idx]]
-        
-        imagePath = os.path.join(self.dataDir,'images',self.filenames[idx]+'.jpg')
+        if self.bbox is not None:
+            bbox = self.bbox[key]
+        else:
+            bbox = None
+        emb = self.caps[idx, :, :]
+        imagePath = os.path.join(self.dataDir, 'CUB_200_2011', 'images',self.filenames[idx]+'.jpg')
         image = self.get_img(imagePath, bbox)
+        
         # random select a sentence
-        sample = np.random.randint(0, 10)
-        sent_idx = (idx-1) * 10 + sample
-        cap = self.caps[sent_idx]
-#         cap = torch.FloatTensor(cap)
-        return image, cap, len(cap), classId, self.filenames[idx]
+        sample = np.random.randint(0, emb.shape[0]-1)
+        cap = emb[sample, :]
+        return image, cap
     
     def __len__(self):
         return len(self.filenames)

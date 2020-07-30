@@ -3,9 +3,13 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+#pytorch
+*.pth
+
 #dataset
 coco2014/
 bird_stack
+*.png
 
 # C extensions
 *.so

@@ -136,7 +136,7 @@ def main():
                 transforms.RandomHorizontalFlip(),
                 transforms.ToTensor(),
                 transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
-    dataset = BirdDataset(dataDir = '../data/bird_stack/', split='train', transform=transform, imgSize=256)
+    dataset = BirdDataset(dataDir = './data/bird_stack/', split='train', transform=transform, imgSize=256)
     tr_loader = DataLoader(dataset, batch_size=batch_size, shuffle=True, drop_last=True)
     #load model Stage-I generator and put it into Stage-II generator
     G1 = G_Stage1()

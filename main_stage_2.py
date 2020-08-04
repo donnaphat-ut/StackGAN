@@ -136,11 +136,11 @@ def main():
                 transforms.RandomHorizontalFlip(),
                 transforms.ToTensor(),
                 transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
-    dataset = BirdDataset(dataDir = '../data/bird_stack/', split='train', transform=transform, imgSize=256)
+    dataset = BirdDataset(dataDir = './data/bird_stack/', split='train', transform=transform, imgSize=256)
     tr_loader = DataLoader(dataset, batch_size=batch_size, shuffle=True, drop_last=True)
     #load model Stage-I generator and put it into Stage-II generator
     G1 = G_Stage1()
-    G1.load_state_dict(torch.load('./netG_epoch_600.pth'))
+    G1.load_state_dict(torch.load('./Result_stage1/netG_epoch_600.pth'))
     G1.eval()
     netG = G_Stage2(G1).to(device)
     netG.apply(weights_init)

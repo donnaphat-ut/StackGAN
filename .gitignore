@@ -10,6 +10,7 @@ __pycache__/
 coco2014/
 bird_stack
 *.png
+*.zip
 
 # C extensions
 *.so
